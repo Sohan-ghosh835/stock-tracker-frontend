@@ -121,3 +121,81 @@ async function registerUser() {
   const data = await res.json();
   alert(data.message || "Registration complete");
 }
+
+async function predictStock() {
+  const symbol = document.getElementById("symbolInput").value.trim();
+  if (!symbol) return;
+
+  try {
+    const res = await fetch(`https://stock-tracker-backend-6sye.onrender.com/predict/${symbol}`);
+    const data = await res.json();
+    if (data.predicted_price) {
+      alert(`📈 Predicted Price for ${symbol.toUpperCase()}: ₹${data.predicted_price}`);
+    } else {
+      alert("Prediction not available.");
+    }
+  } catch (err) {
+    console.error("Prediction error:", err);
+    alert("Prediction fetch failed.");
+  }
+}
+
+async function compareStocks() {
+  const input = prompt("Enter two symbols separated by a comma (e.g. RELIANCE.NS,TCS.NS):");
+  if (!input || !input.includes(",")) return;
+
+  const [symbol1, symbol2] = input.split(",").map(s => s.trim());
+
+  try {
+    const res = await fetch(`https://stock-tracker-backend-6sye.onrender.com/compare/${symbol1}/${symbol2}`);
+    const data = await res.json();
+
+    if (data.error) {
+      alert("Comparison failed: " + data.error);
+      return;
+    }
+
+    let html = `<h2>Comparison: ${symbol1.toUpperCase()} vs ${symbol2.toUpperCase()}</h2>`;
+    for (const [sym, info] of Object.entries(data)) {
+      html += `
+        <h3>${sym.toUpperCase()}</h3>
+        <p><strong>Sector:</strong> ${info.sector || 'N/A'}</p>
+        <p><strong>Market Cap:</strong> ₹${info.marketCap ? (info.marketCap / 1e7).toFixed(2) + ' Cr' : 'N/A'}</p>
+        <p><strong>PE Ratio:</strong> ${info.trailingPE || 'N/A'}</p>
+        <p><strong>EPS:</strong> ${info.trailingEps || 'N/A'}</p>
+        <hr>
+      `;
+    }
+
+    document.getElementById("stockDetails").innerHTML = html;
+  } catch (err) {
+    console.error("Comparison error:", err);
+    alert("Failed to fetch comparison.");
+  }
+}
+
+async function getAIGuide() {
+  const symbol = document.getElementById("symbolInput").value.trim();
+  if (!symbol) return;
+
+  try {
+    const res = await fetch(`https://stock-tracker-backend-6sye.onrender.com/ai-guide/${symbol}`);
+    const data = await res.json();
+
+    if (data.error) {
+      alert("AI Guide Error: " + data.error);
+      return;
+    }
+
+    let html = `
+      <h2>🧠 AI Guide for ${symbol.toUpperCase()}</h2>
+      <p><strong>Pros:</strong> ${data.pros || 'N/A'}</p>
+      <p><strong>Cons:</strong> ${data.cons || 'N/A'}</p>
+    `;
+
+    document.getElementById("stockDetails").innerHTML += html;
+  } catch (err) {
+    console.error("AI Guide error:", err);
+    alert("Failed to get AI guide.");
+  }
+}
