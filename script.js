@@ -1,8 +1,11 @@
 async function fetchStock() {
-  const symbol = document.getElementById("symbolInput").value;
+  const symbol = document.getElementById("symbolInput").value.trim();
+  if (!symbol) return;
+
   try {
     const res = await fetch(`https://stock-tracker-backend-6sye.onrender.com/stock/${symbol}`);
     if (!res.ok) throw new Error("Failed to fetch stock");
+
     const data = await res.json();
 
     const info = data.info || {};
@@ -21,10 +24,14 @@ async function fetchStock() {
       <canvas id="stockChart"></canvas>
     `;
 
-    drawChart(data.history);
+    if (data.history && data.history.length > 0) {
+      drawChart(data.history);
+    } else {
+      document.getElementById("stockDetails").innerHTML += `<p>No historical data available.</p>`;
+    }
   } catch (err) {
-    console.error("Error:", err);
-    document.getElementById("stockDetails").innerHTML = `<p>Failed to load stock data.</p>`;
+    console.error("Error fetching stock:", err);
+    document.getElementById("stockDetails").innerHTML = `<p style="color:red;">Failed to load stock data.</p>`;
   }
 }
 
@@ -57,8 +64,8 @@ function drawChart(history) {
 
 document.getElementById("loginForm")?.addEventListener("submit", async (e) => {
   e.preventDefault();
-  const username = document.getElementById("username").value;
-  const password = document.getElementById("password").value;
+  const username = document.getElementById("username").value.trim();
+  const password = document.getElementById("password").value.trim();
 
   const res = await fetch("https://stock-tracker-backend-6sye.onrender.com/login", {
     method: "POST",
@@ -76,8 +83,8 @@ document.getElementById("loginForm")?.addEventListener("submit", async (e) => {
 });
 
 async function registerUser() {
-  const username = prompt("Enter new username:");
-  const password = prompt("Enter new password:");
+  const username = prompt("Enter new username:")?.trim();
+  const password = prompt("Enter new password:")?.trim();
   if (!username || !password) return;
 
   const res = await fetch("https://stock-tracker-backend-6sye.onrender.com/register", {
