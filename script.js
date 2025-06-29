@@ -199,3 +199,29 @@ async function getAIGuide() {
     alert("Failed to get AI guide.");
   }
 }
+
+async function getAIGuide() {
+  const symbol = document.getElementById("symbolInput").value.trim();
+  if (!symbol) return;
+
+  try {
+    const res = await fetch(`https://stock-tracker-backend-6sye.onrender.com/ai-guide/${symbol}`);
+    const data = await res.json();
+
+    if (data.error) {
+      alert("AI Guide Error: " + data.error);
+      return;
+    }
+
+    let html = `
+      <h2>🧠 AI Guide for ${symbol.toUpperCase()}</h2>
+      <p><strong>Pros:</strong> ${data.pros || 'N/A'}</p>
+      <p><strong>Cons:</strong> ${data.cons || 'N/A'}</p>
+    `;
+
+    document.getElementById("stockDetails").innerHTML += html;
+  } catch (err) {
+    console.error("AI Guide error:", err);
+    alert("Failed to get AI guide.");
+  }
+}
