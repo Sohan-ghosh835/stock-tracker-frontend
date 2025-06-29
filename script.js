@@ -3,7 +3,8 @@ async function fetchStock() {
   if (!symbol) return;
 
   try {
-    const res = await fetch(`https://stock-tracker-backend-6sye.onrender.com/stock/${symbol}`);
+    const res = await fetch(`https://stock-tracker-backend-6sye.onrender.com/stock?symbol=${encodeURIComponent(symbol)}`);
+
     if (!res.ok) throw new Error("Failed to fetch stock");
 
     const data = await res.json();
