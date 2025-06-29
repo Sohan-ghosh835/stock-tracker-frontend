@@ -1,18 +1,31 @@
 async function fetchStock() {
   const symbol = document.getElementById("symbolInput").value;
-  const res = await fetch(`https://stock-tracker-backend-6sye.onrender.com/stock/${symbol}`);
-  const data = await res.json();
+  try {
+    const res = await fetch(`https://stock-tracker-backend-6sye.onrender.com/stock/${symbol}`);
+    if (!res.ok) throw new Error("Failed to fetch stock");
+    const data = await res.json();
 
-  document.getElementById("stockDetails").innerHTML = `
-    <h2>${data.info.longName || symbol.toUpperCase()}</h2>
-    <p><strong>Sector:</strong> ${data.info.sector || 'N/A'}</p>
-    <p><strong>Market Cap:</strong> ₹${(data.info.marketCap/1e7).toFixed(2)} Cr</p>
-    <p><strong>PE Ratio:</strong> ${data.info.trailingPE || 'N/A'}</p>
-    <p><strong>EPS:</strong> ${data.info.trailingEps || 'N/A'}</p>
-    <canvas id="stockChart"></canvas>
-  `;
+    const info = data.info || {};
+    const name = info.longName || symbol.toUpperCase();
+    const sector = info.sector || 'N/A';
+    const marketCap = info.marketCap ? (info.marketCap / 1e7).toFixed(2) : 'N/A';
+    const peRatio = info.trailingPE || 'N/A';
+    const eps = info.trailingEps || 'N/A';
 
-  drawChart(data.history);
+    document.getElementById("stockDetails").innerHTML = `
+      <h2>${name}</h2>
+      <p><strong>Sector:</strong> ${sector}</p>
+      <p><strong>Market Cap:</strong> ₹${marketCap} Cr</p>
+      <p><strong>PE Ratio:</strong> ${peRatio}</p>
+      <p><strong>EPS:</strong> ${eps}</p>
+      <canvas id="stockChart"></canvas>
+    `;
+
+    drawChart(data.history);
+  } catch (err) {
+    console.error("Error:", err);
+    document.getElementById("stockDetails").innerHTML = `<p>Failed to load stock data.</p>`;
+  }
 }
 
 function drawChart(history) {
